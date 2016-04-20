@@ -1,0 +1,65 @@
+{
+	"$schema" : "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion" : "1.0.0.0",
+	"parameters" : {
+		"networkInterfaces_name" : {
+			"defaultValue" : "MyNIC",
+			"type" : "String"
+		},
+		"publicIPAddresses_name" : {
+			"defaultValue" : "MyNICPublicIP",
+			"type" : "String"
+		},
+		"networkInterfaces_id" : {
+			"defaultValue" : "/subscriptions/33a2a411-ddca-452b-b6a6-92083f32cd07/resourceGroups/tniasr3preview/providers/Microsoft.Network/virtualNetworks/mlaFailoverTest/subnets/default",
+			"type" : "String"
+		},
+		"location_name" : {
+			"defaultValue" : "northeurope",
+			"type" : "String"
+		}
+	},
+	"variables" : {},
+	"resources" : [{
+			"comments" : "Network Interface",
+			"type" : "Microsoft.Network/networkInterfaces",
+			"name" : "[parameters('networkInterfaces_name')]",
+			"apiVersion" : "2015-06-15",
+			"location" : "[parameters('location_name')]",
+			"properties" : {
+				"ipConfigurations" : [{
+						"name" : "ipconfig1",
+						"properties" : {
+							/*"privateIPAddress" : "10.2.0.4",
+							"privateIPAllocationMethod" : "Dynamic",*/
+							"publicIPAddress" : {
+								"id" : "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_name'))]"
+							},
+							"subnet" : {
+								"id" : "[parameters('networkInterfaces_id')]"
+							}
+						}
+					}
+				],
+				"dnsSettings" : {
+					"dnsServers" : []
+				},
+				"enableIPForwarding" : false
+			},
+			"dependsOn" : [
+				"[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_name'))]"
+			]
+		}, {
+			"comments" : "Public IP Adress",
+			"type" : "Microsoft.Network/publicIPAddresses",
+			"name" : "[parameters('publicIPAddresses_name')]",
+			"apiVersion" : "2015-06-15",
+			"location" : "[parameters('location_name')]",
+			"properties" : {
+				"publicIPAllocationMethod" : "Dynamic",
+				"idleTimeoutInMinutes" : 4
+			},
+			"dependsOn" : []
+		}
+	]
+}
